@@ -1,0 +1,13 @@
+{
+  "name": "@ai-interview-copilot/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend workspace placeholder.",
+  "scripts": {
+    "dev": "echo \"backend dev placeholder\"",
+    "build": "echo \"backend build placeholder\"",
+    "lint": "echo \"backend lint placeholder\"",
+    "test": "echo \"backend test placeholder\"",
+    "clean": "echo \"backend clean placeholder\""
+  }
+}

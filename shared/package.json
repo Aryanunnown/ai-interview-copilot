@@ -1,0 +1,13 @@
+{
+  "name": "@ai-interview-copilot/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared workspace placeholder.",
+  "scripts": {
+    "dev": "echo \"shared dev placeholder\"",
+    "build": "echo \"shared build placeholder\"",
+    "lint": "echo \"shared lint placeholder\"",
+    "test": "echo \"shared test placeholder\"",
+    "clean": "echo \"shared clean placeholder\""
+  }
+}

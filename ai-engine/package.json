@@ -1,0 +1,13 @@
+{
+  "name": "@ai-interview-copilot/ai-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI engine workspace placeholder.",
+  "scripts": {
+    "dev": "echo \"ai-engine dev placeholder\"",
+    "build": "echo \"ai-engine build placeholder\"",
+    "lint": "echo \"ai-engine lint placeholder\"",
+    "test": "echo \"ai-engine test placeholder\"",
+    "clean": "echo \"ai-engine clean placeholder\""
+  }
+}
