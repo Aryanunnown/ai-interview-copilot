@@ -1,10 +1,15 @@
 import AssignmentTurnedInOutlinedIcon from '@mui/icons-material/AssignmentTurnedInOutlined';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
 import PsychologyAltOutlinedIcon from '@mui/icons-material/PsychologyAltOutlined';
+import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import ScoreboardOutlinedIcon from '@mui/icons-material/ScoreboardOutlined';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
+import WorkOutlineOutlinedIcon from '@mui/icons-material/WorkOutlineOutlined';
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
@@ -13,6 +18,13 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+
+const topStats = [
+  { title: 'Technical Score', value: '84%', helper: 'Architecture and depth', color: '#2563eb' },
+  { title: 'Communication', value: '91%', helper: 'Clear, structured answers', color: '#0f766e' },
+  { title: 'Confidence', value: '78%', helper: 'Stable delivery trend', color: '#7c3aed' },
+  { title: 'ATS Match', value: '88%', helper: 'Resume to JD alignment', color: '#d97706' },
+];
 
 const metrics = [
   {
@@ -43,6 +55,13 @@ const metrics = [
     icon: <PsychologyAltOutlinedIcon />,
     color: '#d97706',
   },
+];
+
+const quickActions = [
+  { label: 'Upload Resume', icon: <UploadFileOutlinedIcon /> },
+  { label: 'Upload JD', icon: <WorkOutlineOutlinedIcon /> },
+  { label: 'Start Interview', icon: <RocketLaunchOutlinedIcon /> },
+  { label: 'View Analytics', icon: <InsightsOutlinedIcon /> },
 ];
 
 const recentInterviews = [
@@ -129,6 +148,84 @@ export function DashboardPage() {
           </Box>
         </Stack>
       </Box>
+
+      <Grid container spacing={2.5}>
+        {topStats.map((stat) => (
+          <Grid item xs={12} sm={6} lg={3} key={stat.title}>
+            <Card
+              sx={{
+                height: '100%',
+                border: '1px solid',
+                borderColor: 'divider',
+                boxShadow: '0 18px 48px rgba(15, 23, 42, 0.06)',
+              }}
+            >
+              <CardContent sx={{ p: 2.5 }}>
+                <Stack spacing={1.5}>
+                  <Stack direction="row" spacing={1.25} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 40,
+                        borderRadius: 999,
+                        bgcolor: stat.color,
+                      }}
+                    />
+                    <Stack spacing={0.25} sx={{ minWidth: 0 }}>
+                      <Typography color="text.secondary" noWrap>
+                        {stat.title}
+                      </Typography>
+                      <Typography variant="h4">{stat.value}</Typography>
+                    </Stack>
+                  </Stack>
+                  <Typography variant="body2" color="text.secondary">
+                    {stat.helper}
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      <Card
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          boxShadow: '0 18px 48px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 2, md: 2.5 } }}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={1.5}
+            alignItems={{ xs: 'stretch', md: 'center' }}
+            justifyContent="space-between"
+          >
+            <Stack spacing={0.25}>
+              <Typography variant="h6">Quick actions</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Fast entry points for the main prep workflow.
+              </Typography>
+            </Stack>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} flexWrap="wrap">
+              {quickActions.map((action) => (
+                <Button
+                  key={action.label}
+                  variant="outlined"
+                  startIcon={action.icon}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    minWidth: { xs: '100%', sm: 150 },
+                  }}
+                >
+                  {action.label}
+                </Button>
+              ))}
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
 
       <Grid container spacing={2.5}>
         {metrics.map((metric) => (

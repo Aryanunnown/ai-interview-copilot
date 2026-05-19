@@ -1,5 +1,6 @@
 import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -32,6 +33,8 @@ const navItems = [
   { label: 'Analytics', path: '/analytics', icon: <AnalyticsOutlinedIcon /> },
   { label: 'History', path: '/history', icon: <HistoryOutlinedIcon /> },
 ];
+
+const readinessItems = ['Resume loaded', 'JD uploaded', 'Interview mode', 'AI readiness'];
 
 function SidebarContent({ isCollapsed, onToggleCollapse, onNavigate }) {
   return (
@@ -67,7 +70,21 @@ function SidebarContent({ isCollapsed, onToggleCollapse, onNavigate }) {
             <IconButton
               onClick={onToggleCollapse}
               size="small"
-              sx={{ display: { xs: 'none', md: 'inline-flex' } }}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                transition: 'transform 180ms ease, background-color 180ms ease, color 180ms ease',
+                '&:hover': {
+                  transform: isCollapsed ? 'translateX(2px) rotate(180deg)' : 'translateX(-2px)',
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                },
+                '& svg': {
+                  transition: 'transform 180ms ease',
+                },
+                '&:active svg': {
+                  transform: 'scale(0.86)',
+                },
+              }}
               aria-label="Toggle sidebar"
             >
               {isCollapsed ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
@@ -149,12 +166,20 @@ function SidebarContent({ isCollapsed, onToggleCollapse, onNavigate }) {
               bgcolor: 'background.default',
             }}
           >
-            <Stack spacing={1}>
+            <Stack spacing={1.25}>
+              {readinessItems.map((item) => (
+                <Stack key={item} direction="row" spacing={1} alignItems="center">
+                  <CheckCircleRoundedIcon color="primary" sx={{ fontSize: 18 }} />
+                  <Typography variant="body2" fontWeight={700}>
+                    {item}
+                  </Typography>
+                </Stack>
+              ))}
               <Chip
-                label="Live prep ready"
+                label="Workspace ready"
                 color="primary"
                 size="small"
-                sx={{ alignSelf: 'flex-start' }}
+                sx={{ alignSelf: 'flex-start', mt: 0.5 }}
               />
               <Typography variant="body2" color="text.secondary">
                 Configure resume and job context before entering the interview room.
