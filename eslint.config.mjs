@@ -6,13 +6,7 @@ export default [
   js.configs.recommended,
   prettier,
   {
-    ignores: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/build/**',
-      '**/coverage/**',
-      '**/.next/**',
-    ],
+    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**', '**/.next/**'],
   },
   {
     files: ['frontend/**/*.{js,jsx}'],
