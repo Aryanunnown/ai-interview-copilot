@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String           @id @default(cuid())
+  name            String?
+  email           String           @unique
+  passwordHash    String
+  resumes         Resume[]
+  jobDescriptions JobDescription[]
+  interviews      Interview[]
+  answers         Answer[]
+  scores          Score[]
+  feedback        Feedback[]
+  weakAreas       WeakArea[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Resume {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?
+  fileName    String?
+  fileUrl     String?
+  rawText     String?
+  summary     String?
+  interviews  Interview[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model JobDescription {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  company      String?
+  description  String
+  requirements String?
+  interviews   Interview[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model Interview {
+  id               String          @id @default(cuid())
+  userId           String
+  resumeId         String?
+  jobDescriptionId String?
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume           Resume?         @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  jobDescription   JobDescription? @relation(fields: [jobDescriptionId], references: [id], onDelete: SetNull)
+  title            String?
+  status           String          @default("draft")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  questions        Question[]
+  answers          Answer[]
+  scores           Score[]
+  feedback         Feedback[]
+  weakAreas        WeakArea[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([resumeId])
+  @@index([jobDescriptionId])
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  interviewId String
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  prompt      String
+  category    String?
+  difficulty  String?
+  order       Int
+  answers     Answer[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([interviewId])
+  @@unique([interviewId, order])
+}
+
+model Answer {
+  id          String    @id @default(cuid())
+  userId      String
+  interviewId String
+  questionId  String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content     String
+  scores      Score[]
+  feedback    Feedback[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([interviewId])
+  @@index([questionId])
+  @@unique([interviewId, questionId])
+}
+
+model Score {
+  id          String    @id @default(cuid())
+  userId      String
+  interviewId String
+  answerId    String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  answer      Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  category    String
+  value       Float
+  maxValue    Float     @default(10)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([interviewId])
+  @@index([answerId])
+}
+
+model Feedback {
+  id          String    @id @default(cuid())
+  userId      String
+  interviewId String
+  answerId    String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  answer      Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  summary     String?
+  strengths   String?
+  improvements String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([interviewId])
+  @@index([answerId])
+}
+
+model WeakArea {
+  id          String    @id @default(cuid())
+  userId      String
+  interviewId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  category    String
+  description String?
+  severity    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([interviewId])
+  @@unique([interviewId, category])
+}
