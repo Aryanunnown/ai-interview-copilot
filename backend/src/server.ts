@@ -1,6 +1,6 @@
-import { createApp } from "./app/app.js";
-import { env, validateEnv } from "./config/env.js";
-import { prisma } from "./config/prisma.js";
+import { createApp } from './app/app.js';
+import { env, validateEnv } from './config/env.js';
+import { prisma } from './config/prisma.js';
 
 validateEnv();
 
@@ -16,5 +16,5 @@ async function shutdown() {
   });
 }
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

@@ -1,5 +1,5 @@
-import type { Request, Response } from "express";
-import { registerUser, loginUser } from "./auth.service.js";
+import type { Request, Response } from 'express';
+import { registerUser, loginUser } from './auth.service.js';
 
 export async function register(req: Request, res: Response) {
   const result = await registerUser(req.validated?.body as any);

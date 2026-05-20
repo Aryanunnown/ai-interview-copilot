@@ -1,4 +1,4 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler } from 'express';
 
 export function asyncHandler(handler: RequestHandler): RequestHandler {
   return (req, res, next) => {

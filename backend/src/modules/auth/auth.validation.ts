@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const email = z.string().trim().toLowerCase().email();
 const password = z.string().min(8).max(128);

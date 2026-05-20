@@ -1,8 +1,8 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { prisma } from "../../config/prisma.js";
-import { env } from "../../config/env.js";
-import { HttpError } from "../../utils/httpError.js";
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { prisma } from '../../config/prisma.js';
+import { env } from '../../config/env.js';
+import { HttpError } from '../../utils/httpError.js';
 
 const passwordSaltRounds = 12;
 
@@ -43,7 +43,7 @@ export async function registerUser({ name, email, password }: RegisterData) {
   });
 
   if (existingUser) {
-    throw new HttpError(409, "Email is already registered");
+    throw new HttpError(409, 'Email is already registered');
   }
 
   const passwordHash = await bcrypt.hash(password, passwordSaltRounds);
@@ -68,13 +68,13 @@ export async function loginUser({ email, password }: LoginData) {
   });
 
   if (!user) {
-    throw new HttpError(401, "Invalid email or password");
+    throw new HttpError(401, 'Invalid email or password');
   }
 
   const passwordMatches = await bcrypt.compare(password, user.passwordHash);
 
   if (!passwordMatches) {
-    throw new HttpError(401, "Invalid email or password");
+    throw new HttpError(401, 'Invalid email or password');
   }
 
   return {

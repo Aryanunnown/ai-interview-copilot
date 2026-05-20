@@ -4,3 +4,7 @@ build
 coverage
 .next
 docker/.data
+
+backend/src/generated
+backend/prisma/migrations
+frontend/dist

@@ -10,6 +10,7 @@
     "shared"
   ],
   "scripts": {
+    "prepare": "husky install",
     "dev": "npm run dev --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
@@ -23,6 +24,7 @@
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.5",
+    "husky": "^9.0.0",
     "prettier": "^3.2.5"
   },
   "engines": {
