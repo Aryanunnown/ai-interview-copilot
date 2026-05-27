@@ -24,17 +24,23 @@ model User {
 }
 
 model Resume {
-  id          String      @id @default(cuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String?
-  fileName    String?
-  fileUrl     String?
-  rawText     String?
-  summary     String?
-  interviews  Interview[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String?
+  fileName        String?
+  fileUrl         String?
+  rawText         String?
+  summary         String?
+  parsedData      Json?
+  skills          String[]    @default([])
+  experienceYears Float?
+  domain          String?
+  education       String[]    @default([])
+  certifications  String[]    @default([])
+  interviews      Interview[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@index([userId])
 }
