@@ -1,7 +1,12 @@
 import { prisma } from '../../config/prisma.js';
 import { HttpError } from '../../utils/httpError.js';
 import { extractTextFromResumeFile, parseResumeText } from './resume.parser.js';
-import type { ResumeUploadBody, ResumeUploadedFile, ResumeUploadResult } from './resume.types.js';
+import type {
+  ParsedEducation,
+  ResumeUploadBody,
+  ResumeUploadedFile,
+  ResumeUploadResult,
+} from './resume.types.js';
 
 type UploadResumeInput = {
   userId: string;
@@ -32,7 +37,7 @@ export async function uploadResume({
       parsedData,
       skills: parsedData.skills,
       experienceYears: parsedData.experienceYears,
-      education: parsedData.education,
+      education: parsedData.education.map(formatEducationForStorage),
       certifications: parsedData.certifications,
       domain: parsedData.domain,
     },
@@ -50,4 +55,10 @@ export async function uploadResume({
     experienceYears: resume.experienceYears,
     domain: resume.domain,
   };
+}
+
+function formatEducationForStorage(education: ParsedEducation) {
+  return [education.degree, education.college, education.year?.toString()]
+    .filter(Boolean)
+    .join(' | ');
 }

@@ -2,94 +2,56 @@ import type { Buffer } from 'node:buffer';
 import { PDFParse } from 'pdf-parse';
 import mammoth from 'mammoth';
 import { HttpError } from '../../utils/httpError.js';
-import type { ParsedResumeData, ResumeUploadedFile } from './resume.types.js';
+import type {
+  ParsedEducation,
+  ParsedResumeData,
+  ResumeDomain,
+  ResumeUploadedFile,
+} from './resume.types.js';
 
 type ResumeFileInput = Pick<ResumeUploadedFile, 'buffer' | 'mimetype'>;
 
-const skillKeywords = [
-  'JavaScript',
-  'TypeScript',
-  'Node.js',
-  'Express',
-  'React',
-  'Next.js',
-  'Vue',
-  'Angular',
-  'HTML',
-  'CSS',
-  'Tailwind CSS',
-  'Python',
-  'Django',
-  'Flask',
-  'FastAPI',
-  'Java',
-  'Spring Boot',
-  'C#',
-  '.NET',
-  'Go',
-  'Rust',
-  'PHP',
-  'Laravel',
-  'Ruby',
-  'Rails',
-  'SQL',
-  'PostgreSQL',
-  'MySQL',
-  'MongoDB',
-  'Redis',
-  'Prisma',
-  'GraphQL',
-  'REST',
-  'AWS',
-  'Azure',
-  'GCP',
-  'Docker',
-  'Kubernetes',
-  'Terraform',
-  'CI/CD',
-  'Git',
-  'Linux',
-  'Machine Learning',
-  'Data Science',
-  'TensorFlow',
-  'PyTorch',
-  'Pandas',
-  'NumPy',
-  'Power BI',
-  'Tableau',
-  'Figma',
-  'Product Management',
-  'Agile',
-  'Scrum',
+type SkillDefinition = {
+  name: string;
+  patterns: RegExp[];
+};
+
+const skillDefinitions: SkillDefinition[] = [
+  { name: 'React', patterns: [/\bReact(?:\.js|JS)?\b/i] },
+  { name: 'Node', patterns: [/\bNode(?:\.js|JS)?\b/i] },
+  { name: 'TypeScript', patterns: [/\bTypeScript\b/i, /\bTS\b/] },
+  { name: 'MongoDB', patterns: [/\bMongoDB\b/i, /\bMongo\b/i] },
+  { name: 'PostgreSQL', patterns: [/\bPostgreSQL\b/i, /\bPostgres\b/i] },
+  { name: 'AWS', patterns: [/\bAWS\b/i, /\bAmazon Web Services\b/i] },
+  { name: 'Docker', patterns: [/\bDocker\b/i] },
+  { name: 'Kubernetes', patterns: [/\bKubernetes\b/i, /\bK8s\b/i] },
+  { name: 'Python', patterns: [/\bPython\b/i] },
+  { name: 'LangChain', patterns: [/\bLangChain\b/i] },
+  { name: 'LangGraph', patterns: [/\bLangGraph\b/i] },
+  { name: 'RAG', patterns: [/\bRAG\b/i, /\bRetrieval[-\s]+Augmented Generation\b/i] },
+  { name: 'OpenAI', patterns: [/\bOpenAI\b/i] },
+  { name: 'Firebase', patterns: [/\bFirebase\b/i] },
+  { name: 'Redis', patterns: [/\bRedis\b/i] },
+  { name: 'Socket.IO', patterns: [/\bSocket\.?IO\b/i, /\bSocketIO\b/i] },
 ];
 
-const domainSignals: Record<string, string[]> = {
-  'Frontend Engineering': ['React', 'Next.js', 'Vue', 'Angular', 'HTML', 'CSS', 'Tailwind CSS'],
-  'Backend Engineering': [
-    'Node.js',
-    'Express',
-    'Django',
-    'Flask',
-    'FastAPI',
-    'Spring Boot',
-    'Prisma',
-    'REST',
-  ],
-  'Data Science': ['Machine Learning', 'Data Science', 'TensorFlow', 'PyTorch', 'Pandas', 'NumPy'],
-  DevOps: ['AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'CI/CD', 'Linux'],
-  'Product Design': ['Figma'],
-  'Product Management': ['Product Management', 'Agile', 'Scrum'],
+const domainSignals: Record<ResumeDomain, string[]> = {
+  Frontend: ['React', 'TypeScript'],
+  Backend: ['Node', 'MongoDB', 'PostgreSQL', 'Redis', 'Socket.IO', 'Firebase'],
+  'Full Stack': ['React', 'Node', 'TypeScript', 'MongoDB', 'PostgreSQL'],
+  'AI Engineer': ['LangChain', 'LangGraph', 'RAG', 'OpenAI'],
+  'ML Engineer': ['Python'],
+  DevOps: ['AWS', 'Docker', 'Kubernetes'],
+  'Data Engineer': ['Python', 'PostgreSQL', 'MongoDB', 'Redis', 'AWS'],
 };
 
 const degreePattern =
-  /\b(Bachelor|Master|B\.?Tech|M\.?Tech|B\.?E\.?|M\.?E\.?|B\.?Sc|M\.?Sc|BCA|MCA|MBA|Ph\.?D|Doctorate|Diploma)\b/i;
+  /\b(?:B\.?\s?Tech|M\.?\s?Tech|B\.?\s?E\.?|M\.?\s?E\.?|B\.?\s?Sc|M\.?\s?Sc|BCA|MCA|MBA|Ph\.?\s?D|Bachelor(?:'s)?(?:\s+of\s+[A-Za-z\s]+)?|Master(?:'s)?(?:\s+of\s+[A-Za-z\s]+)?|Doctorate|Diploma)\b/i;
+
+const educationHeaderPattern = /\b(education|academic|qualification|university|college)\b/i;
 
 const certificationPattern =
   /\b(Certified|Certification|Certificate|AWS Certified|Azure Certified|Google Cloud Certified|PMP|CSM|CKA|CKAD|CISSP|CompTIA|Oracle Certified)\b/i;
-
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 export function cleanResumeText(text: string) {
   return text
@@ -152,17 +114,15 @@ export function parseResumeText(rawText: string): ParsedResumeData {
 }
 
 function extractSkills(text: string) {
-  return skillKeywords.filter((skill) => {
-    const normalizedSkill = escapeRegExp(skill).replace(/\\ /g, '\\s+');
-    const pattern = new RegExp(`(^|[^a-z0-9+#.])${normalizedSkill}([^a-z0-9+#.]|$)`, 'i');
-    return pattern.test(text);
-  });
+  return skillDefinitions
+    .filter((skill) => skill.patterns.some((pattern) => pattern.test(text)))
+    .map((skill) => skill.name);
 }
 
 function extractExperienceYears(text: string) {
-  const matches = Array.from(
-    text.matchAll(/\b(\d{1,2}(?:\.\d)?)\+?\s*(?:years?|yrs?)\b(?:\s+of\s+experience)?/gi),
-  )
+  const experiencePattern =
+    /\b(\d{1,2}(?:\.\d)?)\s*\+?\s*(?:years?|yrs?)\b(?:\s+(?:of\s+)?experience)?/gi;
+  const matches = Array.from(text.matchAll(experiencePattern))
     .map((match) => Number(match[1]))
     .filter((value) => Number.isFinite(value) && value >= 0 && value <= 50);
 
@@ -174,7 +134,45 @@ function extractExperienceYears(text: string) {
 }
 
 function extractEducation(text: string) {
-  return uniqueLinesMatching(text, degreePattern, 12);
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim().replace(/\s+/g, ' '))
+    .filter(Boolean);
+
+  const results: ParsedEducation[] = [];
+  const seen = new Set<string>();
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const nearbyLines = [line, lines[index + 1], lines[index + 2]].filter(Boolean);
+    const candidate = nearbyLines.join(' | ');
+
+    if (!degreePattern.test(candidate) && !educationHeaderPattern.test(line)) {
+      continue;
+    }
+
+    const education = parseEducationCandidate(candidate);
+    const hasEducationSignal = education.degree || education.college || education.year;
+
+    if (!hasEducationSignal) {
+      continue;
+    }
+
+    const key = [education.degree, education.college, education.year].join(':').toLowerCase();
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    results.push(education);
+
+    if (results.length >= 5) {
+      break;
+    }
+  }
+
+  return results;
 }
 
 function extractCertifications(text: string) {
@@ -209,15 +207,84 @@ function uniqueLinesMatching(text: string, pattern: RegExp, limit: number) {
   return results;
 }
 
-function inferDomain(skills: string[]) {
-  let bestDomain: string | null = null;
+function parseEducationCandidate(candidate: string): ParsedEducation {
+  const degree = candidate.match(degreePattern)?.[0] ?? null;
+  const year = extractEducationYear(candidate);
+  const college = extractCollege(candidate, degree);
+
+  return {
+    degree: degree ? normalizeDegree(degree) : null,
+    college,
+    year,
+  };
+}
+
+function extractEducationYear(candidate: string) {
+  const yearMatches = Array.from(candidate.matchAll(/\b(19[5-9]\d|20[0-4]\d)\b/g))
+    .map((match) => Number(match[1]))
+    .filter((year) => year >= 1950 && year <= 2049);
+
+  if (yearMatches.length === 0) {
+    return null;
+  }
+
+  return Math.max(...yearMatches);
+}
+
+function extractCollege(candidate: string, degree: string | null) {
+  const segments = candidate
+    .split('|')
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const collegeSegment =
+    segments.find((segment) => /\b(university|college|institute|school)\b/i.test(segment)) ??
+    segments.find((segment) => degree && !segment.toLowerCase().includes(degree.toLowerCase()));
+
+  if (!collegeSegment) {
+    return null;
+  }
+
+  return (
+    collegeSegment
+      .replace(degreePattern, '')
+      .replace(/\b(education|academic|qualification)s?\b/gi, '')
+      .replace(/\b(19[5-9]\d|20[0-4]\d)\b/g, '')
+      .replace(/[-,:|()[\]]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160) || null
+  );
+}
+
+function normalizeDegree(degree: string) {
+  return degree.replace(/\s+/g, ' ').replace(/\.+/g, '.').trim();
+}
+
+function inferDomain(skills: string[]): ResumeDomain | null {
+  const skillSet = new Set(skills);
+
+  if (skillSet.has('React') && skillSet.has('Node')) {
+    return 'Full Stack';
+  }
+
+  if (
+    skillSet.has('LangChain') ||
+    skillSet.has('LangGraph') ||
+    skillSet.has('RAG') ||
+    skillSet.has('OpenAI')
+  ) {
+    return 'AI Engineer';
+  }
+
+  let bestDomain: ResumeDomain | null = null;
   let bestScore = 0;
 
   for (const [domain, signals] of Object.entries(domainSignals)) {
-    const score = signals.filter((signal) => skills.includes(signal)).length;
+    const score = signals.filter((signal) => skillSet.has(signal)).length;
 
     if (score > bestScore) {
-      bestDomain = domain;
+      bestDomain = domain as ResumeDomain;
       bestScore = score;
     }
   }

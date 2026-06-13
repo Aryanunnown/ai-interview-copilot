@@ -17,12 +17,27 @@ export type ResumeUploadedFile = {
   originalname: string;
 };
 
+export type ParsedEducation = {
+  degree: string | null;
+  college: string | null;
+  year: number | null;
+};
+
+export type ResumeDomain =
+  | 'Frontend'
+  | 'Backend'
+  | 'Full Stack'
+  | 'AI Engineer'
+  | 'ML Engineer'
+  | 'DevOps'
+  | 'Data Engineer';
+
 export type ParsedResumeData = {
   skills: string[];
   experienceYears: number | null;
-  education: string[];
+  education: ParsedEducation[];
   certifications: string[];
-  domain: string | null;
+  domain: ResumeDomain | null;
 };
 
 export type ResumeUploadResult = {
