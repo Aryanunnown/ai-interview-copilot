@@ -264,7 +264,7 @@ export function ResumeUploadPage() {
                 </Typography>
               </Stack>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Chip label={`Domain: ${parsedResult.domain || 'Unknown'}`} color="primary" />
                 <Chip
                   label={`Experience: ${parsedResult.experienceYears ?? 'Unknown'} years`}
@@ -273,16 +273,128 @@ export function ResumeUploadPage() {
                 />
               </Stack>
 
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {(parsedResult.skills || []).map((skill) => (
-                  <Chip key={skill} label={skill} variant="outlined" />
-                ))}
-                {(parsedResult.skills || []).length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">
-                    No skills detected.
+              {parsedResult.candidateSummary ? (
+                <Box
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 1,
+                    bgcolor: 'action.hover',
+                  }}
+                >
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    Candidate Summary
                   </Typography>
-                ) : null}
+                  <Typography variant="body2">{parsedResult.candidateSummary}</Typography>
+                </Box>
+              ) : null}
+
+              <Stack spacing={1}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Skills
+                </Typography>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {(parsedResult.skills || []).length > 0 ? (
+                    (parsedResult.skills || []).map((skill) => (
+                      <Chip key={skill} label={skill} variant="outlined" />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No skills detected.
+                    </Typography>
+                  )}
+                </Stack>
               </Stack>
+
+              {parsedResult.strengths?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Strengths
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.strengths.map((item) => (
+                      <Chip key={item} label={item} color="success" variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.growthAreas?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Growth Areas
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.growthAreas.map((item) => (
+                      <Chip key={item} label={item} color="warning" variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.recommendedRoles?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Recommended Roles
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.recommendedRoles.map((item) => (
+                      <Chip key={item} label={item} color="primary" variant="filled" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.education?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Education
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.education.map((item) => (
+                      <Chip key={item} label={item} variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.certifications?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Certifications
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.certifications.map((item) => (
+                      <Chip key={item} label={item} variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.companies?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Companies
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.companies.map((item) => (
+                      <Chip key={item} label={item} variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
+
+              {parsedResult.roles?.length > 0 ? (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Roles
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {parsedResult.roles.map((item) => (
+                      <Chip key={item} label={item} variant="outlined" />
+                    ))}
+                  </Stack>
+                </Stack>
+              ) : null}
             </Stack>
           </CardContent>
         </Card>

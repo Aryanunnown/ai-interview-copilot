@@ -8,7 +8,7 @@ import { AnalyticsPage } from '../features/analytics/pages/AnalyticsPage.jsx';
 import { DashboardPage } from '../features/dashboard/pages/DashboardPage.jsx';
 import { HistoryPage } from '../features/history/pages/HistoryPage.jsx';
 import { InterviewRoomPage } from '../features/interview-room/pages/InterviewRoomPage.jsx';
-import { JDUploadPage } from '../features/jd-upload/pages/JDUploadPage.jsx';
+import { JobAnalysisPage } from '../features/job/JobAnalysisPage.jsx';
 import { ResumeUploadPage } from '../features/resume-upload/pages/ResumeUploadPage.jsx';
 
 export const router = createBrowserRouter([
@@ -46,7 +46,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/jd-upload',
-        element: <JDUploadPage />,
+        element: <JobAnalysisPage />,
       },
       {
         path: '/interview-room',

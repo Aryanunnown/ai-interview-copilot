@@ -24,38 +24,55 @@ model User {
 }
 
 model Resume {
-  id              String      @id @default(cuid())
-  userId          String
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title           String?
-  fileName        String?
-  fileUrl         String?
-  rawText         String?
-  summary         String?
-  parsedData      Json?
-  skills          String[]    @default([])
-  experienceYears Float?
-  domain          String?
-  education       String[]    @default([])
-  certifications  String[]    @default([])
-  interviews      Interview[]
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id               String      @id @default(cuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title            String?
+  fileName         String?
+  fileUrl          String?
+  rawText          String?
+  summary          String?
+  candidateSummary String?
+  parsedData       Json?
+  parsedProfile    Json?
+  skills           String[]    @default([])
+  experienceYears  Float?
+  domain           String?
+  education        String[]    @default([])
+  certifications   String[]    @default([])
+  strengths        Json?
+  growthAreas      Json?
+  recommendedRoles Json?
+  companies        Json?
+  roles            Json?
+  interviews       Interview[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   @@index([userId])
 }
 
 model JobDescription {
-  id           String      @id @default(cuid())
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title        String
-  company      String?
-  description  String
-  requirements String?
-  interviews   Interview[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id                 String      @id @default(cuid())
+  userId             String
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String
+  company            String?
+  description        String
+  requirements       String?
+  jobTitle           String?
+  jobSummary         String?
+  requiredSkills     Json?
+  preferredSkills    Json?
+  requiredExperience Int?
+  domains            Json?
+  responsibilities   Json?
+  keywords           Json?
+  parsedProfile      Json?
+  analysisSource     String?
+  interviews         Interview[]
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   @@index([userId])
 }
@@ -97,28 +114,28 @@ model Question {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@index([interviewId])
   @@unique([interviewId, order])
+  @@index([interviewId])
 }
 
 model Answer {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   userId      String
   interviewId String
   questionId  String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview   Interview  @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  question    Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
   content     String
   scores      Score[]
   feedback    Feedback[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
+  @@unique([interviewId, questionId])
   @@index([userId])
   @@index([interviewId])
   @@index([questionId])
-  @@unique([interviewId, questionId])
 }
 
 model Score {
@@ -141,18 +158,18 @@ model Score {
 }
 
 model Feedback {
-  id          String    @id @default(cuid())
-  userId      String
-  interviewId String
-  answerId    String?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  answer      Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  summary     String?
-  strengths   String?
+  id           String    @id @default(cuid())
+  userId       String
+  interviewId  String
+  answerId     String?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interview    Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  answer       Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  summary      String?
+  strengths    String?
   improvements String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([userId])
   @@index([interviewId])
@@ -171,7 +188,7 @@ model WeakArea {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  @@unique([interviewId, category])
   @@index([userId])
   @@index([interviewId])
-  @@unique([interviewId, category])
 }

@@ -40,9 +40,48 @@ export type ParsedResumeData = {
   domain: ResumeDomain | null;
 };
 
+export type ResumeIntelligenceProfile = {
+  candidateSummary: string;
+  experienceYears: number;
+  domain: string;
+  skills: string[];
+  strengths: string[];
+  growthAreas: string[];
+  recommendedRoles: string[];
+  education: string[];
+  certifications: string[];
+  companies: string[];
+  roles: string[];
+  technologies: string[];
+  concepts: string[];
+  domains: string[];
+  aiCapabilities: string[];
+  cloudCapabilities: string[];
+};
+
 export type ResumeUploadResult = {
   resumeId: string;
+  candidateSummary: string;
   skills: string[];
-  experienceYears: number | null;
-  domain: string | null;
+  experienceYears: number;
+  domain: string;
+  strengths: string[];
+  growthAreas: string[];
+  recommendedRoles: string[];
+  education: string[];
+  certifications: string[];
+  companies: string[];
+  roles: string[];
+  technologies: string[];
+  concepts: string[];
+  domains: string[];
+  aiCapabilities: string[];
+  cloudCapabilities: string[];
+};
+
+export type ResumeListItem = {
+  id: string;
+  title: string | null;
+  fileName: string | null;
+  createdAt: Date;
 };

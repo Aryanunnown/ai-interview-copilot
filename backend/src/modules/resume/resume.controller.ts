@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 import { HttpError } from '../../utils/httpError.js';
-import { uploadResume as uploadResumeService } from './resume.service.js';
+import {
+  listUserResumes as listUserResumesService,
+  uploadResume as uploadResumeService,
+} from './resume.service.js';
 import type { ResumeUploadBody } from './resume.types.js';
 
 export async function uploadResume(req: Request, res: Response) {
@@ -21,5 +24,18 @@ export async function uploadResume(req: Request, res: Response) {
   return res.status(201).json({
     success: true,
     data: result,
+  });
+}
+
+export async function listUserResumes(req: Request, res: Response) {
+  if (!req.user?.id) {
+    throw new HttpError(401, 'Authentication required');
+  }
+
+  const resumes = await listUserResumesService(req.user.id);
+
+  return res.status(200).json({
+    success: true,
+    data: resumes,
   });
 }
