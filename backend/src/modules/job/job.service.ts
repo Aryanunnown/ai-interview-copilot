@@ -4,6 +4,7 @@ import { analyzeJobDescription, runSemanticMatch } from './job.analyzer.js';
 import { extractJobWithAi } from './services/job-ai-extractor.service.js';
 import { parseJobDescriptionDeterministic } from './services/job-fallback-parser.service.js';
 import { computeTfidfSimilarity } from './services/similarity.service.js';
+import { parseResumeText } from '../resume/resume.parser.js';
 import type {
   JobAnalysisResult,
   JobAnalyzeInput,
@@ -23,6 +24,7 @@ export async function analyzeJob(input: JobAnalyzeInput): Promise<JobAnalysisRes
       domain: true,
       strengths: true,
       parsedProfile: true,
+      rawText: true,
     },
   });
 
@@ -31,17 +33,31 @@ export async function analyzeJob(input: JobAnalyzeInput): Promise<JobAnalysisRes
   }
 
   const profileFromDb = resume.parsedProfile as Record<string, unknown> | null;
+  const parsedResumeFromText = resume.rawText ? parseResumeText(resume.rawText) : null;
+  const resumeSkills = uniqueStrings([
+    ...(resume.skills ?? []),
+    ...(parsedResumeFromText?.skills ?? []),
+  ]);
+  const parsedProfileTechnologies = readStringArray(profileFromDb?.technologies);
+  const deterministicTechnologies = parsedResumeFromText?.skills ?? [];
+  const technologies = uniqueStrings([...parsedProfileTechnologies, ...deterministicTechnologies]);
 
   const resumeProfile: ResumeSkillProfile = {
-    skills: resume.skills,
-    experienceYears: resume.experienceYears,
-    domain: resume.domain,
+    skills: resumeSkills,
+    experienceYears: resume.experienceYears ?? parsedResumeFromText?.experienceYears ?? null,
+    domain: resume.domain ?? parsedResumeFromText?.domain ?? null,
     strengths: (resume.strengths as string[]) || [],
-    technologies: readStringArray(profileFromDb?.technologies),
+    technologies,
     concepts: readStringArray(profileFromDb?.concepts),
     domains: readStringArray(profileFromDb?.domains),
-    aiCapabilities: readStringArray(profileFromDb?.aiCapabilities),
-    cloudCapabilities: readStringArray(profileFromDb?.cloudCapabilities),
+    aiCapabilities: uniqueStrings([
+      ...readStringArray(profileFromDb?.aiCapabilities),
+      ...technologies.filter((skill) => aiCapabilitySkillNames.has(skill)),
+    ]),
+    cloudCapabilities: uniqueStrings([
+      ...readStringArray(profileFromDb?.cloudCapabilities),
+      ...technologies.filter((skill) => cloudCapabilitySkillNames.has(skill)),
+    ]),
   };
 
   const { profile, source } = await extractJobProfile(input.jobDescription);
@@ -101,16 +117,35 @@ async function extractJobProfile(rawText: string): Promise<{
   profile: JobProfile;
   source: 'groq' | 'fallback';
 }> {
+  const deterministicProfile = parseJobDescriptionDeterministic(rawText);
+
   try {
     const result = await extractJobWithAi(rawText);
-    return result;
-  } catch {
-    const fallbackProfile = parseJobDescriptionDeterministic(rawText);
     return {
-      profile: fallbackProfile,
+      profile: mergeJobProfiles(result.profile, deterministicProfile),
+      source: result.source,
+    };
+  } catch {
+    return {
+      profile: deterministicProfile,
       source: 'fallback',
     };
   }
+}
+
+function mergeJobProfiles(primary: JobProfile, fallback: JobProfile): JobProfile {
+  return {
+    jobTitle: primary.jobTitle || fallback.jobTitle,
+    jobSummary: primary.jobSummary || fallback.jobSummary,
+    requiredSkills: uniqueStrings([...primary.requiredSkills, ...fallback.requiredSkills]),
+    preferredSkills: uniqueStrings([...primary.preferredSkills, ...fallback.preferredSkills]),
+    requiredExperience: primary.requiredExperience || fallback.requiredExperience,
+    domains: uniqueStrings([...primary.domains, ...fallback.domains]),
+    responsibilities: uniqueStrings([...primary.responsibilities, ...fallback.responsibilities]),
+    keywords: uniqueStrings([...primary.keywords, ...fallback.keywords]),
+    aiRequirements: uniqueStrings([...primary.aiRequirements, ...fallback.aiRequirements]),
+    cloudRequirements: uniqueStrings([...primary.cloudRequirements, ...fallback.cloudRequirements]),
+  };
 }
 
 function readStringArray(value: unknown): string[] {
@@ -119,3 +154,56 @@ function readStringArray(value: unknown): string[] {
   }
   return value.filter((item): item is string => typeof item === 'string');
 }
+
+function uniqueStrings(values: string[]): string[] {
+  const uniqueValues = new Map<string, string>();
+
+  for (const value of values) {
+    const normalizedValue = value.trim().replace(/\s+/g, ' ');
+
+    if (!normalizedValue) {
+      continue;
+    }
+
+    uniqueValues.set(normalizedValue.toLowerCase(), normalizedValue);
+  }
+
+  return Array.from(uniqueValues.values());
+}
+
+const aiCapabilitySkillNames = new Set([
+  'LLM APIs',
+  'Prompt Workflows',
+  'Prompt Engineering',
+  'Embeddings',
+  'Document Intelligence',
+  'Semantic Search',
+  'Vector Search',
+  'RAG',
+  'LangChain',
+  'LangGraph',
+  'OpenAI',
+  'AWS Bedrock',
+  'SageMaker',
+  'Hugging Face',
+  'Python',
+  'Pinecone',
+]);
+
+const cloudCapabilitySkillNames = new Set([
+  'AWS',
+  'EC2',
+  'S3',
+  'Lambda',
+  'RDS',
+  'API Gateway',
+  'IAM',
+  'CloudWatch',
+  'ECS',
+  'EKS',
+  'AWS CodePipeline',
+  'Docker',
+  'Kubernetes',
+  'CI/CD',
+  'Git',
+]);

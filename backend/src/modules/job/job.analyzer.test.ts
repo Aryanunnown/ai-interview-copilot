@@ -242,9 +242,7 @@ describe('job skill normalization', () => {
     assert.equal(result!.confidence, 1);
 
     const fuzzy = matchSkill('AWS Lambda', ['AWS']);
-    assert.notEqual(fuzzy, null);
-    assert.equal(fuzzy!.matchType, 'fuzzy');
-    assert.equal(fuzzy!.confidence, 0.9);
+    assert.equal(fuzzy, null);
   });
 
   it('matchSkill returns null for no match', () => {
@@ -265,7 +263,7 @@ describe('job skill normalization', () => {
 
     const result2 = matchSkill('AI/ML capabilities', ['AI/ML']);
     assert.notEqual(result2, null, 'AI/ML capabilities should match AI/ML via token containment');
-    assert.equal(result2!.confidence, 0.9);
+    assert.equal(result2!.confidence, 0.85);
   });
 
   it('matchSkill matches umbrella terms like AI/ML capabilities against concrete resume skills', () => {
@@ -288,5 +286,14 @@ describe('job skill normalization', () => {
       'RBAC should match Role-Based Access Control via alias + token containment',
     );
     assert.ok(result3!.confidence >= 0.85);
+  });
+
+  it('does not let broad platform skills satisfy granular service requirements', () => {
+    assert.equal(matchSkill('AWS Bedrock', ['AWS']), null);
+    assert.equal(matchSkill('API Gateway', ['REST API']), null);
+    assert.equal(matchSkill('GitHub Actions', ['Git']), null);
+    assert.equal(matchSkill('Semantic Search', ['Vector Search']), null);
+    assert.equal(matchSkill('pgvector', ['Vector Search', 'Pinecone']), null);
+    assert.equal(matchSkill('OpenSearch', ['Vector Search', 'Pinecone']), null);
   });
 });

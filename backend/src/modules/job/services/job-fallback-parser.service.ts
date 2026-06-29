@@ -26,19 +26,80 @@ const skillPatterns: { name: string; patterns: RegExp[] }[] = [
   { name: 'LangChain', patterns: [/\bLangChain\b/i] },
   { name: 'LangGraph', patterns: [/\bLangGraph\b/i] },
   { name: 'RAG', patterns: [/\bRAG\b/i, /\bRetrieval[-\s]+Augmented Generation\b/i] },
+  { name: 'LLM APIs', patterns: [/\bLLM(?:s)?\s+API(?:s)?\b/i, /\bOpenAI\s+API(?:s)?\b/i] },
+  { name: 'Prompt Workflows', patterns: [/\bprompt\s+workflows?\b/i] },
+  { name: 'Prompt Engineering', patterns: [/\bprompt\s+engineering\b/i] },
+  { name: 'Embeddings', patterns: [/\bembeddings?\b/i] },
+  { name: 'Document Intelligence', patterns: [/\bdocument\s+intelligence\b/i] },
+  { name: 'Semantic Search', patterns: [/\bsemantic\s+search\b/i] },
+  { name: 'Vector Search', patterns: [/\bvector\s+search\b/i] },
   { name: 'OpenAI', patterns: [/\bOpenAI\b/i] },
+  { name: 'AWS Bedrock', patterns: [/\bAWS\s+Bedrock\b/i, /\bBedrock\b/i] },
+  { name: 'SageMaker', patterns: [/\bSageMaker\b/i] },
+  { name: 'Hugging Face', patterns: [/\bHugging\s+Face\b/i] },
   { name: 'Firebase', patterns: [/\bFirebase\b/i] },
   { name: 'Socket.IO', patterns: [/\bSocket\.?IO\b/i, /\bSocketIO\b/i] },
   { name: 'CI/CD', patterns: [/\bCI\/CD\b/i, /\bContinuous Integration\b/i] },
+  { name: 'EC2', patterns: [/\bEC2\b/i] },
+  { name: 'S3', patterns: [/\bS3\b/i] },
+  { name: 'Lambda', patterns: [/\bLambda\b/i] },
+  { name: 'RDS', patterns: [/\bRDS\b/i] },
+  { name: 'API Gateway', patterns: [/\bAPI\s+Gateway\b/i] },
+  { name: 'IAM', patterns: [/\bIAM\b/i] },
+  { name: 'CloudWatch', patterns: [/\bCloudWatch\b/i] },
+  { name: 'ECS', patterns: [/\bECS\b/i] },
+  { name: 'EKS', patterns: [/\bEKS\b/i] },
+  { name: 'AWS CodePipeline', patterns: [/\bAWS\s+CodePipeline\b/i, /\bCodePipeline\b/i] },
+  { name: 'Jenkins', patterns: [/\bJenkins\b/i] },
+  { name: 'GitHub Actions', patterns: [/\bGitHub\s+Actions\b/i] },
   { name: 'Git', patterns: [/\bGit\b/i, /\bGitHub\b/i, /\bGitLab\b/i] },
   { name: 'HTML5', patterns: [/\bHTML5?\b/i] },
   { name: 'CSS3', patterns: [/\bCSS3?\b/i] },
+  { name: 'Material UI', patterns: [/\bMaterial\s+UI\b/i, /\bMUI\b/] },
   { name: 'Redux', patterns: [/\bRedux\b/i] },
   { name: 'WebSockets', patterns: [/\bWebSockets?\b/i] },
   { name: 'Microservices', patterns: [/\bMicroservices?\b/i] },
   { name: 'Linux', patterns: [/\bLinux\b/i] },
   { name: 'RBAC', patterns: [/\bRBAC\b/i, /\bRole[-\s]?Based Access Control\b/i] },
+  { name: 'Secrets Management', patterns: [/\bsecrets?\s+management\b/i] },
+  { name: 'Encryption', patterns: [/\bencryption\b/i] },
+  { name: 'Audit Trails', patterns: [/\baudit\s+trails?\b/i] },
+  { name: 'Observability', patterns: [/\bobservability\b/i] },
+  { name: 'pgvector', patterns: [/\bpgvector\b/i] },
+  { name: 'OpenSearch', patterns: [/\bOpenSearch\b/i] },
+  { name: 'FAISS', patterns: [/\bFAISS\b/i] },
 ];
+
+const aiSkillNames = new Set([
+  'LLM APIs',
+  'Prompt Workflows',
+  'Prompt Engineering',
+  'Embeddings',
+  'Document Intelligence',
+  'Semantic Search',
+  'Vector Search',
+  'RAG',
+  'LangChain',
+  'LangGraph',
+  'OpenAI',
+  'AWS Bedrock',
+  'SageMaker',
+  'Hugging Face',
+]);
+
+const cloudSkillNames = new Set([
+  'AWS',
+  'EC2',
+  'S3',
+  'Lambda',
+  'RDS',
+  'API Gateway',
+  'IAM',
+  'CloudWatch',
+  'ECS',
+  'EKS',
+  'AWS CodePipeline',
+]);
 
 const keywordStopWords = new Set([
   'the',
@@ -162,7 +223,7 @@ export function parseJobDescriptionDeterministic(text: string): JobProfile {
   const directExperiencePattern =
     /\b(\d{1,2}(?:\.\d)?)\s*\+?\s*(?:years?|yrs?)\b(?:\s+(?:of\s+)?(?:professional\s+)?experience)?/gi;
   const rangeExperiencePattern =
-    /\b(\d{1,2}(?:\.\d)?)\s*(?:-|to)\s*(\d{1,2}(?:\.\d)?)\s*(?:years?|yrs?)\b/gi;
+    /\b(\d{1,2}(?:\.\d)?)\s*(?:[-\u2010-\u2015]|to)\s*(\d{1,2}(?:\.\d)?)\s*(?:years?|yrs?)\b/gi;
 
   const directMatches = Array.from(text.matchAll(directExperiencePattern)).map((m) => Number(m[1]));
   const rangeMatches = Array.from(text.matchAll(rangeExperiencePattern)).map((m) => Number(m[1]));
@@ -182,7 +243,7 @@ export function parseJobDescriptionDeterministic(text: string): JobProfile {
     domains: [],
     responsibilities: [],
     keywords: extractKeywords(text),
-    aiRequirements: [],
-    cloudRequirements: [],
+    aiRequirements: requiredSkills.filter((skill) => aiSkillNames.has(skill)),
+    cloudRequirements: requiredSkills.filter((skill) => cloudSkillNames.has(skill)),
   };
 }

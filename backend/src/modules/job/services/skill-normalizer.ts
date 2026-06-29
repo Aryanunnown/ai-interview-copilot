@@ -13,6 +13,8 @@ export type SkillMatchResult = {
 // lists specific technologies under that category (e.g. "RAG, LangChain").
 const UMBRELLA_TERMS: Record<string, string[]> = {
   ai: [
+    'ai',
+    'ai/ml',
     'rag',
     'langchain',
     'langgraph',
@@ -29,6 +31,8 @@ const UMBRELLA_TERMS: Record<string, string[]> = {
     'prompt engineering',
   ],
   ml: [
+    'ml',
+    'ai/ml',
     'rag',
     'langchain',
     'langgraph',
@@ -54,6 +58,28 @@ const UMBRELLA_TERMS: Record<string, string[]> = {
     'soap',
   ],
 };
+
+const GENERIC_SHARED_TOKENS = new Set([
+  'action',
+  'actions',
+  'api',
+  'apis',
+  'automation',
+  'capabilities',
+  'capability',
+  'cloud',
+  'database',
+  'databases',
+  'engineering',
+  'management',
+  'pipeline',
+  'pipelines',
+  'search',
+  'service',
+  'services',
+  'workflow',
+  'workflows',
+]);
 
 export function normalizeSkill(skill: string): string {
   const key = skill
@@ -180,16 +206,6 @@ export function matchSkill(
         matchType,
       };
     }
-
-    const confidence = fuzzyConfidence(jdNormalized, resumeNormalized);
-    if (confidence >= threshold && (!best || confidence > best.confidence)) {
-      best = {
-        jdSkill,
-        matchedSkill: resumeSkill,
-        confidence,
-        matchType: 'fuzzy',
-      };
-    }
   }
 
   // Normalize resume items once for umbrella matching
@@ -225,7 +241,57 @@ export function matchSkill(
     }
   }
 
+  for (const resumeSkill of resumeSkills) {
+    const resumeNormalized = normalizeSkill(resumeSkill);
+    const confidence = fuzzyConfidence(jdNormalized, resumeNormalized);
+
+    if (
+      confidence >= threshold &&
+      isAcceptableFuzzyMatch(jdNormalized, resumeNormalized) &&
+      (!best || confidence > best.confidence)
+    ) {
+      best = {
+        jdSkill,
+        matchedSkill: resumeSkill,
+        confidence,
+        matchType: 'fuzzy',
+      };
+    }
+  }
+
   return best;
+}
+
+function isAcceptableFuzzyMatch(jdSkill: string, resumeSkill: string): boolean {
+  const jdTokens = tokenize(jdSkill);
+  const resumeTokens = tokenize(resumeSkill);
+
+  if (jdTokens.length === 0 || resumeTokens.length === 0) {
+    return false;
+  }
+
+  const resumeTokenSet = new Set(resumeTokens);
+  const sharedTokens = jdTokens.filter((token) => resumeTokenSet.has(token));
+  const resumeIsOnlySubset =
+    resumeTokens.length < jdTokens.length &&
+    resumeTokens.every((token) => jdTokens.includes(token));
+
+  if (resumeIsOnlySubset) {
+    return false;
+  }
+
+  if (sharedTokens.length > 0 && sharedTokens.every((token) => GENERIC_SHARED_TOKENS.has(token))) {
+    return false;
+  }
+
+  const hasSubstringOverlap = jdTokens.some((jdToken) =>
+    resumeTokens.some(
+      (resumeToken) =>
+        jdToken !== resumeToken && (jdToken.includes(resumeToken) || resumeToken.includes(jdToken)),
+    ),
+  );
+
+  return !hasSubstringOverlap;
 }
 
 function matchByUmbrella(

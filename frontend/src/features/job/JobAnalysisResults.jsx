@@ -53,11 +53,32 @@ function SkillSection({ title, icon, skills, color }) {
     >
       <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
         <Stack spacing={2}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            {icon}
-            <Typography variant="h6">{title}</Typography>
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+            <Stack direction="row" spacing={1} alignItems="center">
+              {icon}
+              <Typography variant="h6">{title}</Typography>
+            </Stack>
+            <Chip size="small" label={`${skills.length} total`} variant="outlined" />
           </Stack>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            useFlexGap
+            sx={{
+              alignItems: 'flex-start',
+              '& .MuiChip-root': {
+                height: 'auto',
+                maxWidth: '100%',
+              },
+              '& .MuiChip-label': {
+                display: 'block',
+                whiteSpace: 'normal',
+                overflowWrap: 'anywhere',
+                py: 0.75,
+              },
+            }}
+          >
             {skills.length > 0 ? (
               skills.map((skill) => (
                 <Chip key={skill} label={skill} color={color} variant="filled" />
@@ -68,6 +89,67 @@ function SkillSection({ title, icon, skills, color }) {
               </Typography>
             )}
           </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SkillCoverageSection({ matchedSkills, missingSkills }) {
+  const allSkills = [
+    ...matchedSkills.map((skill) => ({ skill, status: 'Matched', color: 'success' })),
+    ...missingSkills.map((skill) => ({ skill, status: 'Missing', color: 'error' })),
+  ];
+
+  return (
+    <Card
+      sx={{
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: '0 14px 36px rgba(15, 23, 42, 0.05)',
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <CheckCircleOutlineOutlinedIcon color="primary" />
+            <Typography variant="h6">All Required Skills Coverage</Typography>
+          </Stack>
+          <Grid container spacing={1}>
+            {allSkills.map(({ skill, status, color }) => (
+              <Grid item xs={12} sm={6} md={4} key={`${status}-${skill}`}>
+                <Box
+                  sx={{
+                    p: 1.25,
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: 'background.default',
+                    minHeight: 64,
+                  }}
+                >
+                  <Stack spacing={0.75}>
+                    <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
+                      {skill}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      label={status}
+                      color={color}
+                      sx={{ alignSelf: 'flex-start' }}
+                    />
+                  </Stack>
+                </Box>
+              </Grid>
+            ))}
+            {allSkills.length === 0 ? (
+              <Grid item xs={12}>
+                <Typography variant="body2" color="text.secondary">
+                  No required skills returned.
+                </Typography>
+              </Grid>
+            ) : null}
+          </Grid>
         </Stack>
       </CardContent>
     </Card>
@@ -186,6 +268,11 @@ export function JobAnalysisResults({ result }) {
           />
         </Grid>
       </Grid>
+
+      <SkillCoverageSection
+        matchedSkills={result.matchedSkills ?? []}
+        missingSkills={result.missingSkills ?? []}
+      />
 
       {result.strengths?.length > 0 ? (
         <ListSection
